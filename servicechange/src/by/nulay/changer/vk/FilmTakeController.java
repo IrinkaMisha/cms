@@ -21,31 +21,31 @@ import java.util.List;
 public class FilmTakeController {
 
     @Autowired
-    private DataSiteService filmTakeService;
+    private FilmTakeService filmTakeService;
 
     @RequestMapping(value = "changer/nextfilm1", method = RequestMethod.GET, produces="application/json")
     public @ResponseBody
-    DataSite nextfilm() throws Exception{
+    FilmTake nextfilm() throws Exception{
         return filmTakeService.getNextFilm();
     }
 
     @RequestMapping(value = "changer/nextfilm2", method = RequestMethod.GET, produces="application/json")
     public @ResponseBody
-    List<DataSite> nextfilm2(@RequestParam("date") String datelong) throws Exception{
-        List<DataSite> filmTake =filmTakeService.getNextFilmL(new Date(new Long(datelong)));
+    List<FilmTake> nextfilm2(@RequestParam("date") String datelong) throws Exception{
+        List<FilmTake> filmTake =filmTakeService.getNextFilmL(new Date(new Long(datelong)));
         return filmTake;
     }
 
     @RequestMapping(value = "changer/nextfilm3", method = RequestMethod.GET, produces="application/json")
     public @ResponseBody
-    DataSite nextfilm3(HttpServletResponse response) throws Exception{
+    FilmTake nextfilm3(HttpServletResponse response) throws Exception{
         response.setHeader("Access-Control-Allow-Origin","*");
         return filmTakeService.getNextFilm();
     }
 
     @RequestMapping(value = "changer/nextfilmok", method = RequestMethod.GET, produces="application/json")
     public @ResponseBody
-    DataSite nextfilm4(HttpServletResponse response) throws Exception{
+    FilmTake nextfilm4(HttpServletResponse response) throws Exception{
         response.setHeader("Access-Control-Allow-Origin","*");
         return filmTakeService.getNextFilmOK();
     }
@@ -54,7 +54,7 @@ public class FilmTakeController {
     @RequestMapping(value = "changer/savefilmjson", method = RequestMethod.GET, produces="application/json")
     public @ResponseBody boolean savefilmJSON(@RequestParam("json") String json) throws Exception{
 //        ObjectMapper mapper = new ObjectMapper();
-        DataSite a= null;
+        FilmTake a= null;
 //        try {
 //            a = mapper.readValue(json, Film.class);
 //        } catch (IOException e) {
@@ -67,7 +67,7 @@ public class FilmTakeController {
     @RequestMapping(value = "changer/savefilm", method = RequestMethod.GET, produces="application/json")
     public @ResponseBody boolean savefilm(@RequestParam("film") String film, HttpServletResponse response) throws Exception{
         response.setHeader("Access-Control-Allow-Origin","*");
-        DataSite filmTakeF =new DataSite();
+        FilmTake filmTakeF =new FilmTake();
         filmTakeF.setFilm(new String(film.getBytes("ISO-8859-1"),"UTF8"));
         filmTakeF.setDateCreate(new Date());
         return filmTakeService.saveFilm(filmTakeF);
@@ -76,7 +76,7 @@ public class FilmTakeController {
     @RequestMapping(value = "changer/savefilm2", method = RequestMethod.POST, produces="application/json;charset=UTF-8")
     public @ResponseBody boolean savefilm2(@RequestParam("name") String name,@RequestParam("discription") String discription,@RequestParam("img") String img,@RequestParam("film") String film, @RequestParam("sight") String sight, HttpServletResponse response) throws Exception{
         response.setHeader("Access-Control-Allow-Origin","*");
-        DataSite filmTakeF =new DataSite();
+        FilmTake filmTakeF =new FilmTake();
         filmTakeF.setFilm(film);
         filmTakeF.setName(name);
         filmTakeF.setDiscription(discription);

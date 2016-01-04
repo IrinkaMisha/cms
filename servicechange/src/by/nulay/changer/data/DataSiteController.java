@@ -80,7 +80,7 @@ public class DataSiteController {
         dataSiteF.setDataSite(dataSite);
         dataSiteF.setName(name);
         dataSiteF.setDiscription(discription);
-        dataSiteF.setImg(img);
+        dataSiteF.setImgs(img);
         dataSiteF.setSight(sight);
         dataSiteF.setDateCreate(new Date());
         return dataSiteService.saveDataSite(dataSiteF);

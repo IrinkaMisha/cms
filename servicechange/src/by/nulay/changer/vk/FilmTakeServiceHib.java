@@ -11,8 +11,8 @@ import java.util.List;
  * Created by miha on 17.11.2015.
  */
 @Transactional(readOnly = true)
-public class FilmTakeServiceHib<T extends DataSite,ID extends Number> extends GenericHibernateDAO<T,ID> implements DataSiteService<T,ID> {
-    private static Logger log= Logger.getLogger(DataSiteServiceHib.class);
+public class FilmTakeServiceHib<T extends FilmTake,ID extends Number> extends GenericHibernateDAO<T,ID> implements FilmTakeService<T,ID> {
+    private static Logger log= Logger.getLogger(FilmTakeServiceHib.class);
 
 //    @Autowired
 //    public filmServiceHib(SessionFactory sessionFactory) {

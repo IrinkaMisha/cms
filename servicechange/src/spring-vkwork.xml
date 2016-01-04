@@ -11,6 +11,7 @@
     <context:component-scan base-package="by.nulay.changer.vk"/>
     <context:component-scan base-package="by.nulay.changer.films"/>
     <context:component-scan base-package="by.nulay.changer.task"/>
+    <context:component-scan base-package="by.nulay.changer.data"/>
     <!--<context:component-scan base-package="rw.gcktc.cms.menu"/>-->
     <!--<context:component-scan base-package="rw.gcktc.cms.material"/>-->
 
@@ -27,6 +28,7 @@
                 <value>by.nulay.changer.vk</value>
                 <value>by.nulay.changer.films</value>
                 <value>by.nulay.changer.task</value>
+                <value>by.nulay.changer.data</value>
             </list>
         </constructor-arg>
     </bean>

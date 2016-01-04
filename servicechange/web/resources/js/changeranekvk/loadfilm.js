@@ -46,8 +46,11 @@ var addAnek={
             type: "GET",
             url: thisEl.servurl+"/changer/nextfilm3",
             data: {date: this.date},
-            success: function(data){if(data){thisEl.addAnek(data)}},
-            error:function(data){thisEl.addinfo("Сервер не отвечает");}
+            success: function(data){if(data){thisEl.addAnek(data)}else{
+                thisEl.addinfo("Список пустой, ждем 2 часа до следующей проверки "+new Date());
+                setTimeout(function(){location.reload(true);},2*60*60*1000);
+            }},
+            error:function(data){thisEl.addinfo("Сервер не отвечает");setTimeout(function(){location.reload(true);},2*60*1000);}
         });
     },
     _addImage:function(anek){

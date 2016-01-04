@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Created by miha on 17.11.2015.
  */
-public interface FilmTakeService<T extends DataSite,ID extends Number> {
+public interface FilmTakeService<T extends FilmTake,ID extends Number> {
 
     void addFilm(T film);
 
