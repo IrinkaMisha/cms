@@ -40,6 +40,7 @@ var addAnek={
         //setTimeout(function(){thisEl.getNewAnek();},this.timeFNA);
         if(new Date().getHours()<8) {
             setTimeout(function(){location.reload(true);},(8-new Date().getHours())*60*60*1000);
+            return;
         }
         this.addinfo('Получаем фильм');
         jQuery.ajax({
