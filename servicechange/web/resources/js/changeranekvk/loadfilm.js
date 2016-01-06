@@ -4,7 +4,7 @@ var addAnek={
     numVh:true,
     listAnekR:[],//список контента для добавления
     numVr:0,
-    stopSA:false,
+    stopSA:false, //false-запущено
     numOOSight:0,
     date:new Date().getTime(),
     servurl:'http://localhost:8080',
@@ -19,8 +19,7 @@ var addAnek={
         }
         this.createcontainer();
         this.addinfo('Старт');
-       // this.createStartAct();
-        this.getNewAnek();
+        this.createStartAct();
     },
     createcontainer:function(){
         $('body').prepend('<div id="panelDf" style="display:block;height:123px;width:115px;left:3px;top:40px;z-index:40;position:fixed;font-size: smaller;"></div>');
@@ -30,10 +29,11 @@ var addAnek={
         jQuery('#logP').prepend('<div>'+info+'</div>');
     },
     createStartAct:function(){
-        var butStartAddAnek=jQuery('<button id="butStAddA">Старт</button>');
+        var butStartAddAnek=jQuery('<button id="butStAddA">Стоп</button>');
         var thisEl=this;
         butStartAddAnek.click(function(){if(thisEl.stopSA){butStartAddAnek.text("Стоп");thisEl.stopSA=false;thisEl.getNewAnek();}else{butStartAddAnek.text("Старт");thisEl.stopSA=true;}});
         jQuery('#panelDf').prepend(butStartAddAnek);
+        this.getNewAnek();
     },
     getNewAnek:function(){
         var thisEl=this;

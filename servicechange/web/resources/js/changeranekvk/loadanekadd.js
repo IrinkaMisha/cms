@@ -4,7 +4,7 @@ var addAnek={
     numVh:true,
     listAnekR:[],//список контента для добавления
     numVr:0,
-    stopSA:true,
+    stopSA:false,
     numOOSight:0,
     date:new Date().getTime(),
 	servurl:'http://localhost:8080',
@@ -30,10 +30,11 @@ var addAnek={
         jQuery('#logP').prepend('<div>'+info+'</div>');
     },
     createStartAct:function(){
-        var butStartAddAnek=jQuery('<button id="butStAddA">Старт</button>');
+        var butStartAddAnek=jQuery('<button id="butStAddA">Стоп</button>');
         var thisEl=this;
         butStartAddAnek.click(function(){if(thisEl.stopSA){butStartAddAnek.text("Стоп");thisEl.stopSA=false;thisEl.getNewAnek();}else{butStartAddAnek.text("Старт");thisEl.stopSA=true;}});        
         jQuery('#panelDf').prepend(butStartAddAnek);
+        this.getNewAnek();
     },
     getNewAnek:function(){
         var thisEl=this;
