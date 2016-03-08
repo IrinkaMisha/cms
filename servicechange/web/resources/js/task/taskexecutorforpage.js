@@ -1,4 +1,4 @@
-console.log("taskExecutorFP");
+console.log("taskExecutorFPload_v4");
 var taskExecutorFP={
     timeProv:60*1000,//время проверки нового таска
     date:new Date().getTime(),
@@ -7,7 +7,7 @@ var taskExecutorFP={
     countund:0,
     init:function(options){
         var thisEl=this;
-        console.log("taskExecutorFPStart");
+        console.log("taskExecutorFPstart");
         if(options){
             if(options.date){
                 this.date=options.date;
@@ -25,12 +25,14 @@ var taskExecutorFP={
         }
     },
     addinfo:function(info){
+        console.log(info);
         jQuery('#logP').prepend('<div>'+info+'</div>');
     },
     obrData:function(data,fb){
         var thisEl=this;
         thisEl.createcontainer();
-        thisEl.addinfo('Получили задание для выполнения '+fb+" "+data.pageName);
+        console.log(data);
+        thisEl.addinfo('Получили задание для выполнения fb:'+fb+" pn:"+data.id);
         thisEl.servError=0;
         jQuery('#panelDf').css('display','block');
         switch (data.content){
@@ -44,40 +46,54 @@ var taskExecutorFP={
     },
     getTaskForPage:function(ind){
         var thisEl=this;
-        if(location.href.indexOf("facebook.com")!=-1){
-            if(document.facebookData!=null){
-                jQuery('body').append("<div>Это фейсбук таск "+JSON.stringify(document.facebookData)+"</div>");
-                if(location.href.indexOf(document.facebookData.pageName.substring(21,document.facebookData.pageName.length))==-1){
-                    return;
+        console.log("TryGetTasks");
+//        if(location.href.indexOf("facebook.com")!=-1){
+//            if(document.facebookData!=null){
+//                jQuery('body').append("<div>Это фейсбук таск "+JSON.stringify(document.facebookData)+"</div>");
+//                if(location.href.indexOf(document.facebookData.pageName.substring(21,document.facebookData.pageName.length))==-1){
+//                    return;
+//                }
+//                this.obrData(document.facebookData,true);
+//            }else{
+//                ind++;
+//                if(ind>1){
+//                    window.close();
+//                }
+//                setTimeout(function(){thisEl.getTaskForPage(ind);},1000);
+//            }
+//            return;
+//        }
+//        if( location.href.indexOf("youtube.com")!=-1){
+//            if(document.facebookData!=null){
+//                //jQuery('body').append("<div>Это фейсбук таск "+ind+"</div>");
+//                if(location.href.indexOf(document.facebookData.pageName.substring(20,document.facebookData.pageName.length))==-1){
+//                    return;
+//                }
+//                this.obrData(document.facebookData,true);
+//            }else{
+//                ind++;
+//                if(ind>1){
+//                    window.close();
+//                }
+//                setTimeout(function(){thisEl.getTaskForPage(ind);},1000);
+//            }
+//            return;
+//        }
+
+        try{
+            var res=getResultHTTP(location.href);
+            if(res!=null){
+                res=JSON.parse(res);
+                console.log(res);
+                if(res!=null && res.id+""!="undefined") {
+                    thisEl.pastRequest(res,ind);
                 }
-                this.obrData(document.facebookData,true);
-            }else{
-                ind++;
-                if(ind>1){
-                    window.close();
-                }
-                setTimeout(function(){thisEl.getTaskForPage(ind);},1000);
+                return null;
             }
-            return;
-        }
-        if( location.href.indexOf("youtube.com")!=-1){
-            if(document.facebookData!=null){
-                //jQuery('body').append("<div>Это фейсбук таск "+ind+"</div>");
-                if(location.href.indexOf(document.facebookData.pageName.substring(20,document.facebookData.pageName.length))==-1){
-                    return;
-                }
-                this.obrData(document.facebookData,true);
-            }else{
-                ind++;
-                if(ind>1){
-                    window.close();
-                }
-                setTimeout(function(){thisEl.getTaskForPage(ind);},1000);
-            }
-            return;
-        }
+        }catch(e){};
+
         console.log("Ищем задание");
-        var thisEl=this;
+
         jQuery.ajax({
             type: "POST",
             url: thisEl.servurl+"/changer/task/gettaskforPage",
@@ -85,16 +101,7 @@ var taskExecutorFP={
             data: {"executor": executor,"pageName":location.href},
             dataType:"json",
             success: function(data){
-                if(data!=null && data.id+""!="undefined"){
-                    console.log(data);
-                    thisEl.obrData(data);
-                }else{
-                    ind++;
-                    if(ind>1){
-                        return;
-                    }
-                    setTimeout(function(){thisEl.getTaskForPage(ind);},3000);
-                }
+                thisEl.pastRequest(data,ind);
             },
             error:function(data){
                 if(thisEl.servError<10){
@@ -106,6 +113,19 @@ var taskExecutorFP={
                 }
             }
         });
+    },
+    pastRequest:function(data,ind){
+        var thisEl=this;
+        if(data!=null && data.id+""!="undefined"){
+            console.log(data);
+            thisEl.obrData(data);
+        }else{
+            ind++;
+            if(ind>1){
+                return;
+            }
+            setTimeout(function(){thisEl.getTaskForPage(ind);},3000);
+        }
     },
     addVKGrAddMessage:function (content){
         this.addinfo('<b>Делаем запись</b>');
@@ -146,22 +166,23 @@ var taskExecutorFP={
     signeYoutube:function(idtask){
         console.log("signeYoutube");
         if(!this.checkedYoutubeSigneClick()){
-            $('.yt-uix-button-subscribe-branded').onclick();
+            jQuery('.yt-uix-subscription-button:first')[0].click();
+            //jQuery('.yt-uix-button-subscribe-branded')[0].click();
             this.isYoutubeSign=true;
             console.log("signeYoutubeComplete");
-            this.checkedWork('checkedYoutubeSigneClick',idtask);
+            this.checkedWork("checkedYoutubeSigneClick",idtask);
         }else{
             this.addinfo('Уже выполнили');
             this.taskComplete(idtask);
         }
     },
     checkedYoutubeSigneClick:function(){
-        return this.isYoutubeSign;
+        return jQuery('.yt-uix-subscription-button:first span span:visible').hasClass('subscribed-label');
     },
     isYoutubeClick:false,
     youtubeLike:function(idtask){
         if(!this.checkedYoutubeClick()){
-            $('.like-button-renderer-like-button-unclicked').onclick();
+            jQuery('.like-button-renderer-like-button-unclicked')[0].click();
             this.isYoutubeClick=true;
             this.checkedWork('checkedYoutubeClick',idtask);
         }else{
@@ -170,7 +191,7 @@ var taskExecutorFP={
         }
     },
     checkedYoutubeClick:function(){
-        return this.isYoutubeClick;
+        return jQuery('.like-button-renderer-like-button-unclicked').hasClass("hid");
     },
     putLikeFaceBookPage:function(idtask){
         this.addinfo('Пытаемся выполнить');
@@ -203,7 +224,9 @@ var taskExecutorFP={
     },
     //нужно ли лайкнуть, или уже лайкнуто true-уже все сделано
     chackedLikeFaceBookPage:function(){
-        return !(jQuery('.likeCommentGroup .likeButton:contains(Нравится):visible').length>0 || (jQuery("#fbProfileCover .PageLikeButton").length>0 & jQuery("#fbProfileCover .PageLikeButton .PageLikedButton").length==0) || jQuery('.UFILikeLink:contains(Нравится)').length>0);
+        return !(jQuery('.likeCommentGroup .likeButton:contains(Нравится):visible').length>0
+            || (jQuery("#fbProfileCover .PageLikeButton").length>0 & jQuery("#fbProfileCover .PageLikeButton .PageLikedButton").length==0)
+            || jQuery('.UFILikeLink:contains(Нравится)').length>0);
     },
     checkedWork:function(funcChName, idtask){
         this.countCheck=0;
@@ -263,10 +286,16 @@ var taskExecutorFP={
         return jQuery('#group_like_module button:not(._group_send_msg)').length<1 && jQuery('#subscribe_button:visible').length<1;
     },
     likeOnPage:function(idtask){
+        this.addinfo('Пытаемся лайкнуть запись '+idtask);
         if(location.href.indexOf('photo')!=-1){
-            if(!this.checkedLikePhoto()) {
-                Photoview.like();
-//                jQuery('#pv_like_wrap').click();
+            if(!this.checkedLikePhoto()){
+                try {
+                    Photoview.like();
+                } catch (e) {
+                    if(jQuery('#pv_like_wrap #pv_like_icon').length>0){
+                        jQuery('#pv_like_wrap #pv_like_icon')[0].click();
+                    }
+                }
                 this.checkedWork('checkedLikePhoto',idtask);
             }else{
                 this.taskComplete(idtask);
@@ -276,6 +305,7 @@ var taskExecutorFP={
                 this.clickedH(jQuery('.fw_post_info .fw_like_icon'));
                 this.clickedH(jQuery('.fw_like_wrap'));
                 this.clickedH(jQuery('#bt_rows .bp_post:first .like_wrap.fl_r'));
+                this.clickedH(jQuery('#pv_like_wrap #pv_like_icon'));
                 var thisEl=this;
                 setTimeout(function(){thisEl.checkedWork('chackedlikeOnPage',idtask);},2000);
             }else{
@@ -299,7 +329,10 @@ var taskExecutorFP={
         return false;
     },
     chackedlikeOnPage:function(){
-        return jQuery('.fw_post_info .fw_like_icon').css('opacity')==1 || jQuery('#bt_rows .bp_post:first .like_wrap.fl_r i.fl_l').css('opacity')==1;
+        return jQuery('.fw_post_info .fw_like_icon').css('opacity')==1
+            || jQuery('#bt_rows .bp_post:first .like_wrap.fl_r i.fl_l').css('opacity')==1
+            || jQuery('.fw_like_icon.fl_l').css('opacity')!=0.4
+            || jQuery('#pv_like_wrap #pv_like_icon').css('opacity')!=0.4 ;
     }
 //    checkedWork:function(funcChName, idtask){
 //        var thisEl=this;
@@ -310,12 +343,18 @@ var taskExecutorFP={
 
 function checkJquery(countund){
     try{
+        console.log("taskExecutorFPload2");
         jQuery(function(){setTimeout(function(){taskExecutorFP.init()},2000);});
     }catch(e){
+        console.log(e);
         countund++;
-        setTimeout(function(){checkJquery(countund)},1000);
+        if(countund<10)
+            setTimeout(function(){checkJquery(countund)},1000);
+        else{
+            console.log(taskExecutorFP);
+            console.log(jQuery);
+        }
     }
-
 }
 
 checkJquery(0);

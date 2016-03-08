@@ -32,13 +32,17 @@ var addAnek={
     createStartAct:function(){
         var butStartAddAnek=jQuery('<button id="butStAddA">Стоп</button>');
         var thisEl=this;
-        butStartAddAnek.click(function(){if(thisEl.stopSA){butStartAddAnek.text("Стоп");thisEl.stopSA=false;thisEl.getNewAnek();}else{butStartAddAnek.text("Старт");thisEl.stopSA=true;}});        
+        butStartAddAnek.click(function(){if(thisEl.stopSA){butStartAddAnek.text("Стоп");thisEl.stopSA=false;thisEl.getNewAnek();}else{thisEl.addinfo('Публикация анекдотов остановлена.');butStartAddAnek.text("Старт");thisEl.stopSA=true;}});
         jQuery('#panelDf').prepend(butStartAddAnek);
         this.getNewAnek();
     },
     getNewAnek:function(){
         var thisEl=this;
         setTimeout(function(){thisEl.getNewAnek();},this.timeFNA);
+        if(new Date().getHours()<6) {
+            this.addinfo('До 6 утра не печатаем анекдоты');
+            return;
+        }
         this.addinfo('Получаем анекдот');
         jQuery.ajax({
             type: "GET",

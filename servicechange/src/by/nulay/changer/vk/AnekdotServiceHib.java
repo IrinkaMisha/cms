@@ -54,41 +54,45 @@ public class AnekdotServiceHib <T extends Anekdot,ID extends Number> extends Gen
 
     //проверка анекдота, проверяет по словам больше countsimb символов и процент совпадения procsvp
     private boolean checkedAnek(String anekdot, int procsvp, int countsimb){
-        String[] strA=anekdot.toLowerCase().trim().split("[^а-я]");
-        List<String> lS=new ArrayList<String>();
-        String ch1="";
-        String ch2="";
-        String ch3="";
-        int d=0;
-        for(int i=0;i<strA.length;i++){
-            if(strA[i].length()>countsimb){
-                lS.add(strA[i]);
-                ch1+="sd.ds"+d+"+";
-                ch2+=" (anekdot  REGEXP '"+strA[i]+"') ds"+d+",";
-                ch3+=strA[i]+"|";
-                d+=1;
+        String str="";
+        if(anekdot.length()<50){
+            str = "SELECT sd.an FROM anekdot WHERE anekdot ='" + anekdot+"'";
+        }else {
+            String[] strA = anekdot.toLowerCase().trim().split("[^а-я]");
+            List<String> lS = new ArrayList<String>();
+            String ch1 = "";
+            String ch2 = "";
+            String ch3 = "";
+            int d = 0;
+            for (int i = 0; i < strA.length; i++) {
+                if (strA[i].length() > countsimb) {
+                    lS.add(strA[i]);
+                    ch1 += "sd.ds" + d + "+";
+                    ch2 += " (anekdot  REGEXP '" + strA[i] + "') ds" + d + ",";
+                    ch3 += strA[i] + "|";
+                    d += 1;
+                }
             }
-//            if(d>10){
-//                break;
-//            }
-        }
-        if(d<2){
-            if(countsimb<3){
+            if (d < 2) {
+                if (countsimb < 3) {
+                    return true;
+                }
+                return checkedAnek(anekdot, 70, countsimb - 1);
+            }
+            if (lS.size() == 0) {
                 return true;
             }
-            return checkedAnek(anekdot,70,countsimb-1);
+            int df = (lS.size() * procsvp) / 100;
+            //минимальная длина искомого текста
+            int lenmin = anekdot.length() - anekdot.length() / 20;
+            //максимальная длина искомого текста
+            int lenmax = anekdot.length() + anekdot.length() / 20;
+            str = "SELECT sd.an,(" + ch1.substring(0, ch1.length() - 1) + ") ks FROM " +
+                    "(SELECT anekdot an," + ch2.substring(0, ch2.length() - 1) + " FROM " +
+                    "(SELECT LOWER(anekdot) anekdot FROM anekdot WHERE CHAR_LENGTH(anekdot)>" + lenmin + " AND CHAR_LENGTH(anekdot)<" + lenmax + ") an " +
+                    "WHERE anekdot REGEXP  '" + ch3.substring(0, ch3.length() - 1) + "') sd " +
+                    "WHERE (" + ch1.substring(0, ch1.length() - 1) + ")>=" + df;
         }
-        if(lS.size()==0){return true;}
-        int df=(lS.size()*procsvp)/100;
-        //минимальная длина искомого текста
-        int lenmin=anekdot.length()-anekdot.length()/20;
-        //максимальная длина искомого текста
-        int lenmax=anekdot.length()+anekdot.length()/20;
-        String str="SELECT sd.an,("+ch1.substring(0,ch1.length()-1)+") ks FROM " +
-                "(SELECT anekdot an,"+ch2.substring(0,ch2.length()-1)+" FROM " +
-                "(SELECT LOWER(anekdot) anekdot FROM anekdot WHERE CHAR_LENGTH(anekdot)>"+lenmin+" AND CHAR_LENGTH(anekdot)<"+lenmax+") an " +
-                "WHERE anekdot REGEXP  '"+ch3.substring(0,ch3.length()-1)+"') sd " +
-                "WHERE ("+ch1.substring(0,ch1.length()-1)+")>="+df;
         return getSession().createSQLQuery(str).list().size()>0;
     }
 

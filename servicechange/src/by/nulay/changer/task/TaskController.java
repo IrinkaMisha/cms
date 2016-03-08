@@ -60,7 +60,9 @@ public class TaskController {
             e.printStackTrace();
         }
         if(task!=null && task.getPageName()!=null && task.getPageName()!=""){
-            //task.setPageName(task.getPageName().replaceAll("https","http"));
+            task.setPageName(task.getPageName().replaceAll("https://",""));
+            task.setPageName(task.getPageName().replaceAll("http://",""));
+            task.setPageName(task.getPageName().replaceAll("www.",""));
             if(task.getDateexecution()==null){
                 task.setDateexecution(new Date());
             }
@@ -87,6 +89,19 @@ public class TaskController {
     @RequestMapping(value = "changer/task/gettaskforPage", method = RequestMethod.POST, produces=MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody Task getTaskForPage(@RequestParam("executor")String executor,@RequestParam("pageName")String pageName,HttpServletResponse response) {
         response.setHeader("Access-Control-Allow-Origin","*");
+        pageName=pageName.replaceAll("https://","");
+        pageName=pageName.replaceAll("http://","");
+        pageName=pageName.replaceAll("www.","");
+        Task t= jobService.getTaskForPage(pageName,executor);
+        return t;
+    }
+
+    @RequestMapping(value = "changer/task/gettaskforPage2", method = RequestMethod.GET)
+    public @ResponseBody Task getTaskForPage2(@RequestParam("executor")String executor,@RequestParam("pageName")String pageName,HttpServletResponse response) {
+        response.setHeader("Access-Control-Allow-Origin","*");
+        pageName=pageName.replaceAll("https://","");
+        pageName=pageName.replaceAll("http://","");
+        pageName=pageName.replaceAll("www.","");
         Task t= jobService.getTaskForPage(pageName,executor);
         return t;
     }

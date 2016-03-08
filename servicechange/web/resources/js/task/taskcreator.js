@@ -10,6 +10,8 @@ var Queue = function(){
 var ted=false;
 setTimeout(function(){if(typeof jQuery=="undefined" | !ted) location.href=location.href},60*10*1000);
 
+function getFlash(name) { return window.document[name] || window[name] || document.embeds[name]; }
+console.log("taskCreator");
 var taskCreator= {
     timeProv: 60 * 1000,//время проверки нового таска
     timeReSearchTask: 60*5*1000,//время перезагрузки страницы и поиска заданий
@@ -66,6 +68,7 @@ var taskCreator= {
         }
     },
     addinfo:function(info){
+        console.log(info);
         jQuery('#logP').prepend('<div>'+info+'</div>');
     },
     //ищем задания и вызваем его добавление для пользователя
@@ -97,22 +100,24 @@ var taskCreator= {
             var pageName=elT.attr('href');
             var name=elT.parent().text();
             this.addinfo(pageName);
-
+            var price=elT.parent().parent().find('span[data-bind=price]').text();
+            thisEl.addinfo("Ждем "+price*10+" мин");
 //            if(pageName.indexOf('facebook.com')!=-1){
 //                task.find('[data-bind=hide]').click();
 //                this.searthTask();
 //                return;
 //            }
+            var perf=false;
             switch (name){
 //                case 'Нажмитерассказать друзьям': contT="toldFrands";break;
                 case 'Вступите всообщество': contT="goInGroup";break;
                 case 'Поставьте лайк настранице': contT=(pageName.indexOf('facebook.com')!=-1)?"likeOnPageF":"likeOnPage";break;
                 case "Поставьте 'Нравится'под видео":contT="likeOnPageYT";break;
                 case 'Подпишитесь наканал':contT="signeYT";break;
-//                case 'Посмотритевидео': contT="lookvideo"; task.find('[data-bind=hide]').click();this.searthTask();return;
+                case 'Посмотритевидео': contT="lookvideo";break;
 //                case 'Расскажите огруппе': contT="toldFrandsAG";break;
 //                case 'Рассказать осайте': name+='_'+pageName; pageName=(task.find('[data-bind=item_network] i.fa').attr('class').indexOf('facebook'))?"facebook.com":"vk.com"; contT=(pageName.indexOf('facebook.com')!=-1)?"toldASF":"toldAS";   break;
-                default : contT=name; this.addinfo('Не будем выполнять задание '+contT); break;
+                default : contT=name; this.addinfo('Не будем выполнять задание '+contT); perf=true; break;
             }
 //            if(pageName.indexOf('video')!=-1){
 //                this.addinfo('Не будем выполнять задание '+contT);
@@ -120,7 +125,7 @@ var taskCreator= {
 //                return;
 //            }
             // log(elT.innerHTML);
-            this.addTask({"name":name,"executor":window.executor,"content":contT,"pageName":pageName,"performed":false});
+            this.addTask({"name":name,"executor":window.executor,"content":contT,"pageName":pageName,"performed":perf},price);
         } else{
             this.addinfo('Заданий больше нету - ждем нового поиска '+new Date());
             setTimeout(function(){location.reload();},this.timeReSearchTask);
@@ -130,7 +135,7 @@ var taskCreator= {
         }
     },
     //добавляем задание для выполнения
-    addTask:function(task){
+    addTask:function(task,price){
         var thisEl=this;
         this.addinfo('Заводим новое задание');
         jQuery.ajax({
@@ -152,8 +157,13 @@ var taskCreator= {
                 thisEl.addinfo('Завели задание task.content='+task.content+" "+window.execPermission[task.content]);
                 if(data!=null && window.execPermission[task.content]){
                     thisEl.curEl.data=data;
-                    window.open(data.pageName,'_blank');
-                    setTimeout(function(){thisEl.checkComplete(data.id);},thisEl.timecheckComplete*2);
+                    window.open(task.pageName,'_blank');
+                    var tdop=0;
+                    if(task.contT=="lookvideo"){
+                        tdop=price*10*1000*60;
+                        thisEl.addinfo("Ждем "+price*10+" мин");
+                    }
+                    setTimeout(function(){thisEl.checkComplete(data.id);},thisEl.timecheckComplete*2+tdop);
                 }else{
                     thisEl.searthTask();
                 }},
@@ -189,27 +199,42 @@ var taskCreator= {
     //Пытаемся проверить  выполнение
     checkToDo:function(id_task){
         this.addinfo("Тискаем кнопку выполнено");
-        this.curEl.el.find('[data-bind=check]').click();
-        this.chRCount=0;
+        if(this.curEl.el.find('[data-bind=check]:visible')){
+            this.curEl.el.find('[data-bind=check]').click();
+            this.chRCount=0;
+        }
         this.checkReady(id_task);
     },
     checkReady:function(id_task){
         this.addinfo("Ждем готовности");
         var thisEl=this;
         if(this.curEl.el.find('[data-bind=success]:visible').length>0 || this.chRCount>5){
-            if (this.chRCount<6){
-                jQuery.ajax({
-                    type: "GET",
-                    url: thisEl.servurl+"/changer/task/setPerformedStatus",
-                    data: {"id_task": id_task,"status": 2},
-                    success: function(data){}
-                });
-            }
+            this.sendPerformStatus(id_task,(this.chRCount<6)?2:3,0);
             this.searthTask();
         }else{
             this.chRCount++;
-            setTimeout(function(){thisEl.checkReady(id_task);},this.timeProv);
+            setTimeout(function(){thisEl.checkToDo(id_task);},this.timeProv);
         }
+    },
+    sendPerformStatus:function(id_task,status,ind){
+        var thisEl=this;
+        jQuery.ajax({
+            type: "GET",
+            url: thisEl.servurl+"/changer/task/setPerformedStatus",
+            data: {"id_task": id_task,"status": status},
+            success: function(data){
+                thisEl.addinfo("Status installed.")
+            },
+            error:function(){
+                if(ind<5) {
+                    setTimeout(function () {
+                        thisEl.sendPerformStatus(id_task, status, ind);
+                    }, this.timeProv);
+                }else{
+                    thisEl.addinfo("diden`t succesfull send request about status complete.")
+                }
+            }
+        });
     }
 }
 
