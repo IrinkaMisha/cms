@@ -208,8 +208,8 @@ var taskCreator= {
     checkReady:function(id_task){
         this.addinfo("Ждем готовности");
         var thisEl=this;
-        if(this.curEl.el.find('[data-bind=success]:visible').length>0 || this.chRCount>5){
-            this.sendPerformStatus(id_task,(this.chRCount<6)?2:3,0);
+        if(this.curEl.el.find('[data-bind=success]:visible').length>0 || this.chRCount>3){
+            this.sendPerformStatus(id_task,(this.chRCount<4)?2:3,0);
             this.searthTask();
         }else{
             this.chRCount++;

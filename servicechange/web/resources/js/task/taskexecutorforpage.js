@@ -1,10 +1,11 @@
-console.log("taskExecutorFPload_v4");
+console.log("taskExecutorFPload_v5");
 var taskExecutorFP={
     timeProv:60*1000,//время проверки нового таска
     date:new Date().getTime(),
     servurl:'https://localhost:8443',
     servError:0,
     countund:0,
+    prInd:0,
     init:function(options){
         var thisEl=this;
         console.log("taskExecutorFPstart");
@@ -44,84 +45,68 @@ var taskExecutorFP={
             case 'signeYT':thisEl.signeYoutube(data.id);break;
         }
     },
-    getTaskForPage:function(ind){
+    getTaskForPage:function(){
         var thisEl=this;
         console.log("TryGetTasks");
-//        if(location.href.indexOf("facebook.com")!=-1){
-//            if(document.facebookData!=null){
-//                jQuery('body').append("<div>Это фейсбук таск "+JSON.stringify(document.facebookData)+"</div>");
-//                if(location.href.indexOf(document.facebookData.pageName.substring(21,document.facebookData.pageName.length))==-1){
-//                    return;
-//                }
-//                this.obrData(document.facebookData,true);
-//            }else{
-//                ind++;
-//                if(ind>1){
-//                    window.close();
-//                }
-//                setTimeout(function(){thisEl.getTaskForPage(ind);},1000);
-//            }
-//            return;
-//        }
-//        if( location.href.indexOf("youtube.com")!=-1){
-//            if(document.facebookData!=null){
-//                //jQuery('body').append("<div>Это фейсбук таск "+ind+"</div>");
-//                if(location.href.indexOf(document.facebookData.pageName.substring(20,document.facebookData.pageName.length))==-1){
-//                    return;
-//                }
-//                this.obrData(document.facebookData,true);
-//            }else{
-//                ind++;
-//                if(ind>1){
-//                    window.close();
-//                }
-//                setTimeout(function(){thisEl.getTaskForPage(ind);},1000);
-//            }
-//            return;
-//        }
-
         try{
-            var res=getResultHTTP(location.href);
-            if(res!=null){
-                res=JSON.parse(res);
-                console.log(res);
-                if(res!=null && res.id+""!="undefined") {
-                    thisEl.pastRequest(res,ind);
-                }
-                return null;
+            getResultHTTP(location.href,thisEl);
+        }catch(e){
+            console.log("ошибка e="+e);
+        }
+    },
+    resComplete:function(res){
+        var thisEl=this;
+        console.log("Здесь "+res);
+        if(res!=null && res!=""){
+            res=JSON.parse(res);
+            console.log(res);
+            if(res!=null && res.id>0) {
+                thisEl.pastRequest(res);
             }
-        }catch(e){};
-
-        console.log("Ищем задание");
-
-        jQuery.ajax({
-            type: "POST",
-            url: thisEl.servurl+"/changer/task/gettaskforPage",
-            //data: {"executor": jQuery('#myprofile').attr('href')},
-            data: {"executor": executor,"pageName":location.href},
-            dataType:"json",
-            success: function(data){
-                thisEl.pastRequest(data,ind);
-            },
-            error:function(data){
-                if(thisEl.servError<10){
-                    ind++;
-                    if(ind>5){
+            return null;
+        }else{
+            if(this.chURL!=1){
+                if(location.href.indexOf("facebook.com")!=-1){
+                    console.log("Повторный запрос facebook");
+                    var urlK=document.location.origin+"/"+$('button.PageLikeButton[data-profiled!=e]').attr('data-profileid');
+                    console.log(urlK);
+                    if(location.href!=urlK){
+                        this.chURL=1;
+                        getResultHTTP(urlK,thisEl);
                         return;
                     }
-                    setTimeout(function(){thisEl.getTaskForPage(ind);},thisEl.timeProv);
                 }
             }
-        });
+            console.log("Ищем задание");
+            jQuery.ajax({
+                type: "POST",
+                url: thisEl.servurl+"/changer/task/gettaskforPage",
+                //data: {"executor": jQuery('#myprofile').attr('href')},
+                data: {"executor": executor,"pageName":location.href},
+                dataType:"json",
+                success: function(data){
+                    thisEl.pastRequest(data);
+                },
+                error:function(data){
+                    if(thisEl.servError<10){
+                        ind++;
+                        if(ind>5){
+                            return;
+                        }
+                        setTimeout(function(){thisEl.getTaskForPage(ind);},thisEl.timeProv);
+                    }
+                }
+            });
+        }
     },
-    pastRequest:function(data,ind){
+    pastRequest:function(data){
         var thisEl=this;
         if(data!=null && data.id+""!="undefined"){
             console.log(data);
             thisEl.obrData(data);
         }else{
-            ind++;
-            if(ind>1){
+            this.prInd++;
+            if(this.prInd>2){
                 return;
             }
             setTimeout(function(){thisEl.getTaskForPage(ind);},3000);
@@ -344,7 +329,7 @@ var taskExecutorFP={
 function checkJquery(countund){
     try{
         console.log("taskExecutorFPload2");
-        jQuery(function(){setTimeout(function(){taskExecutorFP.init()},2000);});
+        jQuery(function(){setTimeout(function(){taskExecutorFP.init()},3000);});
     }catch(e){
         console.log(e);
         countund++;
