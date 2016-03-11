@@ -17,7 +17,7 @@ var taskExecutorFP={
                 this.servurl=options.servurl;
             }
         }
-        this.getTaskForPage();
+        this.getTaskForPage(location.href);
     },
     createcontainer:function(){
         if(jQuery('#panelDf').length<1){
@@ -45,13 +45,23 @@ var taskExecutorFP={
             case 'signeYT':thisEl.signeYoutube(data.id);break;
         }
     },
-    getTaskForPage:function(){
-        var thisEl=this;
+    getTaskForPage:function(urld){
         console.log("TryGetTasks");
+        var thisEl=this;
         try{
-            getResultHTTP(location.href,thisEl);
+            GM_xmlhttpRequest({
+                method: "GET",
+                url: thisEl.servurl+"/changer/task/gettaskforPage2?executor="+window.executor+"&pageName="+urld,
+                onload: function(response) {
+                    console.log(response.responseText);
+                    thisEl.resComplete(response.responseText);
+                } ,
+                onerror:function(){
+                    thisEl.resComplete(null);
+                }
+            });
         }catch(e){
-            console.log("ошибка e="+e);
+            console.log(e);
         }
     },
     resComplete:function(res){
@@ -61,7 +71,7 @@ var taskExecutorFP={
             res=JSON.parse(res);
             console.log(res);
             if(res!=null && res.id>0) {
-                thisEl.pastRequest(res);
+                thisEl.getTaskForPage(res);
             }
             return null;
         }else{
@@ -133,19 +143,48 @@ var taskExecutorFP={
         }
         this.addinfo("Отправляем доклад о выполнении");
         var thisEl=this;
-        jQuery.ajax({
-            type: "GET",
-            url: thisEl.servurl+"/changer/task/markcomleted",
-            data: {"id_task": id_task,"executor":window.executor},
-            success: function(data){
-                if(data){
-                    thisEl.addinfo("Выполнили ура.");
-                    window.close();
-                    // thisEl.getNextTask();
-                    setTimeout(function(){thisEl.taskComplete(id_task);},30000)
-                }},
-            error:function(data){thisEl.addinfo("Сервер не отвечает"); setTimeout(function(){thisEl.taskComplete(id_task);},30000)}
-        });
+        if(this.tCGM!=1){
+            try{
+                GM_xmlhttpRequest({
+                    method: "GET",
+                    url: thisEl.servurl+"/changer/task/markcomleted",
+                    data: {"id_task": id_task,"executor":window.executor},
+                    onload: function(data) {
+                        if(data){
+                            thisEl.addinfo("Выполнили ура.");
+                            window.close();
+                            // thisEl.getNextTask();
+                            setTimeout(function(){thisEl.taskComplete(id_task);},30000)
+                        }
+                    } ,
+                    onerror:function(){
+                        thisEl.addinfo("Сервер не отвечает"); setTimeout(function(){thisEl.taskComplete(id_task);},30000)
+                    }
+                });
+            }catch(e){
+                console.log(e);
+            }
+            this.tCGM=1;
+        }else{
+            if(this.tCGM==4){
+                window.close();
+                return;
+            }
+            jQuery.ajax({
+                type: "GET",
+                url: thisEl.servurl+"/changer/task/markcomleted",
+                data: {"id_task": id_task,"executor":window.executor},
+                success: function(data){
+                    if(data){
+                        thisEl.addinfo("Выполнили ура.");
+                        window.close();
+                        // thisEl.getNextTask();
+                        setTimeout(function(){thisEl.taskComplete(id_task);},30000)
+                    }},
+                error:function(data){thisEl.addinfo("Сервер не отвечает"); setTimeout(function(){thisEl.taskComplete(id_task);},30000)}
+            });
+            this.tCGM++;
+        }
     },
     isYoutubeSign:false,
     signeYoutube:function(idtask){
@@ -274,6 +313,7 @@ var taskExecutorFP={
         this.addinfo('Пытаемся лайкнуть запись '+idtask);
         if(location.href.indexOf('photo')!=-1){
             if(!this.checkedLikePhoto()){
+                this.addinfo('fotolike');
                 try {
                     Photoview.like();
                 } catch (e) {
@@ -283,17 +323,20 @@ var taskExecutorFP={
                 }
                 this.checkedWork('checkedLikePhoto',idtask);
             }else{
+                this.addinfo('fotolike complete');
                 this.taskComplete(idtask);
             }
         }else{
             if(!this.chackedlikeOnPage()){
+                this.addinfo('justlike');
                 this.clickedH(jQuery('.fw_post_info .fw_like_icon'));
                 this.clickedH(jQuery('.fw_like_wrap'));
                 this.clickedH(jQuery('#bt_rows .bp_post:first .like_wrap.fl_r'));
-                this.clickedH(jQuery('#pv_like_wrap #pv_like_icon'));
+//                this.clickedH(jQuery('#pv_like_wrap #pv_like_icon'));
                 var thisEl=this;
                 setTimeout(function(){thisEl.checkedWork('chackedlikeOnPage',idtask);},2000);
             }else{
+                this.addinfo('justlike complete');
                 this.taskComplete(idtask);
             }
         }
@@ -316,8 +359,8 @@ var taskExecutorFP={
     chackedlikeOnPage:function(){
         return jQuery('.fw_post_info .fw_like_icon').css('opacity')==1
             || jQuery('#bt_rows .bp_post:first .like_wrap.fl_r i.fl_l').css('opacity')==1
-            || jQuery('.fw_like_icon.fl_l').css('opacity')!=0.4
-            || jQuery('#pv_like_wrap #pv_like_icon').css('opacity')!=0.4 ;
+            || jQuery('.fw_like_icon.fl_l').css('opacity')!=0.4;
+//            || jQuery('#pv_like_wrap #pv_like_icon').css('opacity')!=0.4 ;
     }
 //    checkedWork:function(funcChName, idtask){
 //        var thisEl=this;
