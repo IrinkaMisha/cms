@@ -71,7 +71,7 @@ var taskExecutorFP={
             res=JSON.parse(res);
             console.log(res);
             if(res!=null && res.id>0) {
-                thisEl.getTaskForPage(res);
+                this.pastRequest(res);
             }
             return null;
         }else{
@@ -82,7 +82,7 @@ var taskExecutorFP={
                     console.log(urlK);
                     if(location.href!=urlK){
                         this.chURL=1;
-                        getResultHTTP(urlK,thisEl);
+                        this.getTaskForPage(urlK);
                         return;
                     }
                 }
