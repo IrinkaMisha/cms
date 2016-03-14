@@ -133,7 +133,7 @@ var anekWork={
         this.addinfo('cтарт аякс');
         var thisEl=this;
         jQuery.ajax({
-            type: "GET",
+            type: "POST",
             url: thisEl.servurl+'/changer/saveanekdot2',
             data: anek,
             success: function(data){

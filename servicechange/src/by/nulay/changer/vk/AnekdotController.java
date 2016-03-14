@@ -69,11 +69,11 @@ public class AnekdotController {
         return anekdotService.saveAnekdot(anekdot);
     }
 
-    @RequestMapping(value = "changer/saveanekdot2", method = RequestMethod.GET, produces="application/json")
+    @RequestMapping(value = "changer/saveanekdot2", method = RequestMethod.POST, produces="application/json")
     public @ResponseBody boolean saveanekdot2(@RequestParam("cadded") Integer cadded,@RequestParam("clike") Integer clike, @RequestParam("anek") String anek, @RequestParam("group") String group, HttpServletResponse response) throws Exception{
         response.setHeader("Access-Control-Allow-Origin","*");
         Anekdot anekdot=new Anekdot();
-        anekdot.setAnekdot(new String(anek.getBytes("ISO-8859-1"),"UTF8"));
+        anekdot.setAnekdot(anek);
         anekdot.setCountLike(clike);
         anekdot.setCountAdded(cadded);
         anekdot.setGroup(group);

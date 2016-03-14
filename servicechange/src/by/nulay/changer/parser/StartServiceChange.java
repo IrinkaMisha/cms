@@ -5,6 +5,7 @@ import by.nulay.changer.parser.MegacriticParser;
 import by.nulay.changer.parser.ParserImpl;
 import by.nulay.changer.parser.SerialochkaParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -18,13 +19,15 @@ import java.io.IOException;
 @Component("StartServiceChange")
 public class StartServiceChange {
     @Autowired
-    MegacriticParser megacriticParser;
+            @Qualifier("MegacriticParser")
+    ParserImpl megacriticParser;
     @Autowired
-    SerialochkaParser serialochkaParser;
+            @Qualifier("SerialochkaParser")
+    ParserImpl serialochkaParser;
 
     @Scheduled(fixedRate = 14400000)
-    public void startCheckFilms( ) throws IOException {
-        megacriticParser.startParse();
-        serialochkaParser.startParse();
+    public void startCheckFilms( ) throws IOException{
+        megacriticParser.startParseAndSave();
+        serialochkaParser.startParseAndSave();
     }
 }

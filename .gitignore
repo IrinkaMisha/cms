@@ -22,3 +22,5 @@ bin/
 overlays/
 target/
 *.log
+/openshift
+/openshift.pub
