@@ -13,7 +13,7 @@ setTimeout(function(){if(typeof jQuery=="undefined" | !ted) location.href=locati
 function getFlash(name) { return window.document[name] || window[name] || document.embeds[name]; }
 console.log("taskCreator");
 var taskCreator= {
-    timeProv: 60 * 1000,//время проверки нового таска
+    timeProv: 30 * 1000,//время проверки нового таска
     timeReSearchTask: 60*5*1000,//время перезагрузки страницы и поиска заданий
     date: new Date().getTime(),
     servurl: 'https://localhost:8443',
@@ -138,6 +138,9 @@ var taskCreator= {
     addTask:function(task,price){
         var thisEl=this;
         this.addinfo('Заводим новое задание');
+        this.curEl.task=task;
+        this.curEl.price=price;
+        this.chRCount=0;//обнуляем счетчик выполнения
         jQuery.ajax({
             type: "POST",
             dataType:"json",
@@ -157,13 +160,7 @@ var taskCreator= {
                 thisEl.addinfo('Завели задание task.content='+task.content+" "+window.execPermission[task.content]);
                 if(data!=null && window.execPermission[task.content]){
                     thisEl.curEl.data=data;
-                    window.open(task.pageName,'_blank');
-                    var tdop=0;
-                    if(task.contT=="lookvideo"){
-                        tdop=price*10*1000*60;
-                        thisEl.addinfo("Ждем "+price*10+" мин");
-                    }
-                    setTimeout(function(){thisEl.checkComplete(data.id);},thisEl.timecheckComplete*2+tdop);
+                    thisEl.execTask(task,price);
                 }else{
                     thisEl.searthTask();
                 }},
@@ -173,10 +170,21 @@ var taskCreator= {
             }
         });
     },
+    //вызываем выполнение задания
+    execTask:function(task,price){
+        var thisEl=this;
+        window.open(task.pageName,'_blank');
+        var tdop=0;
+        if(task.contT=="lookvideo"){
+            tdop=price*10*1000*60;
+            thisEl.addinfo("Идет просмотр видео ждем "+price*10+" мин");
+        }
+        setTimeout(function(){thisEl.checkComplete(data.id);},thisEl.timecheckComplete*2+tdop);
+    },
     //проверяем выполнилось ли задание или нет
     checkComplete:function(id_task){
         var thisEl=this;
-        thisEl.addinfo("Проверяем выполнено ли задание");
+        thisEl.addinfo("Проверка №"+this.countCheck+" выполнено ли задание");
         if(this.countCheck<10){
             this.countCheck++;
             jQuery.ajax({
@@ -198,21 +206,25 @@ var taskCreator= {
     },
     //Пытаемся проверить  выполнение
     checkToDo:function(id_task){
-        this.addinfo("Тискаем кнопку выполнено");
-        if(this.curEl.el.find('[data-bind=check]:visible')){
-            this.curEl.el.find('[data-bind=check]').click();
-            this.chRCount=0;
+        this.addinfo("Тискаем кнопку проврить");
+        this.chRCount++;
+        //пробуем еще раз выполнить задание
+        if(this.chRCount==5){
+            this.execTask(this.curEl.task,this.curEl.price);
+        }else{
+            if(this.curEl.el.find('[data-bind=check]:visible')){
+                this.curEl.el.find('[data-bind=check]').click();
+            }
+            this.checkReady(id_task);
         }
-        this.checkReady(id_task);
     },
     checkReady:function(id_task){
         this.addinfo("Ждем готовности");
         var thisEl=this;
-        if(this.curEl.el.find('[data-bind=success]:visible').length>0 || this.chRCount>3){
+        if(this.curEl.el.find('[data-bind=success]:visible').length>0 || this.chRCount>10){
             this.sendPerformStatus(id_task,(this.chRCount<4)?2:3,0);
             this.searthTask();
         }else{
-            this.chRCount++;
             setTimeout(function(){thisEl.checkToDo(id_task);},this.timeProv);
         }
     },
