@@ -5,7 +5,6 @@ function getCountLike(){
     if(pn=='/o_smile_o') return 450;
     if(pn=='/ostrjak') return 200;
     if(pn=='/i.love.smile') return 250;
-    if(pn=='/palnom6') return 30000;
     return 0;
 }
 
@@ -149,5 +148,5 @@ var anekWork={
 function anekTask(){    
 	anekWork.init({'countLike':getCountLike()});	
 }
-var listtask=[{url:'/palnom6',func:anekTask},{url:'/evil_incorparate',func:anekTask},{url:'/anekdot',func:anekTask},{url:'/o_smile_o',func:anekTask},{url:'/ostrjak',func:anekTask},{url:'/i.love.smile',func:anekTask}];
+var listtask=[{url:'/evil_incorparate',func:anekTask},{url:'/anekdot',func:anekTask},{url:'/o_smile_o',func:anekTask},{url:'/ostrjak',func:anekTask},{url:'/i.love.smile',func:anekTask}];
 anekWork.nexter(listtask);
