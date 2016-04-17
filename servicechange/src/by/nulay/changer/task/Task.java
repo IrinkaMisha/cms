@@ -25,7 +25,9 @@ public class Task implements Serializable,Cloneable{
     @Column(name = "dateexecution")
     private Date dateexecution;//дата выполнения
     private Boolean performed=false;//выполнено
-    private Integer performedStatus;//0-создано,1-выполнено,2-проверено выполнение
+    private Integer performedStatus;//see TaskStatus 0-создано,1-выполнено,2-проверено выполнение
+    private String additionalData;//have posibility save in JSON
+
 
     public Long getId() {
         return id;
@@ -91,5 +93,7 @@ public class Task implements Serializable,Cloneable{
         this.performedStatus = performedStatus;
     }
 
+    public String getAdditionalData() {return additionalData;}
 
+    public void setAdditionalData(String additionalData) {this.additionalData = additionalData;}
 }

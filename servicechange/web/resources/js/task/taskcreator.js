@@ -98,6 +98,9 @@ var taskCreator= {
             var elT=task.find('a[data-bind=url]');
             var contT="";
             var pageName=elT.attr('href');
+            if(pageName!=null){
+                pageName=pageName.substr(pageName.indexOf('http'),pageName.length);
+            }
             var name=elT.parent().text();
             this.addinfo(pageName);
             var price=elT.parent().parent().find('span[data-bind=price]').text();
